@@ -19,14 +19,14 @@ export default function initializeDatabase() {
     logging: LOGGING, 
   });
 
-  // database
-  //   .authenticate()
-  //   .then(() => {
-  //     console.log('Database connected successfully.');
-  //   })
-  //   .catch((error: Error) => {
-  //     console.error('Unable to connect to the database:', error);
-  //   });
+  database
+    .authenticate()
+    .then(() => {
+      console.log('Database connected successfully.');
+    })
+    .catch((error: Error) => {
+      console.error('Unable to connect to the database:', error);
+    });
 
   return database;
 }

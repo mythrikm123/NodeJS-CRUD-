@@ -66,3 +66,30 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         next(err);
     }
 };
+
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.params.userId;
+        console.log('Attempting to fetch profile for user ID:', userId);
+
+        const user = await userService.getProfile(userId);
+
+        if (user) {
+            console.log('User profile found:', user);
+            res.status(200).json({
+                status: 'ok',
+                message: 'User profile fetched successfully',
+                data: user,
+            });
+        } else {
+            console.log('User profile not found');
+            res.status(404).json({
+                status: 'nok',
+                message: 'User profile not found',
+            });
+        }
+    } catch (err) {
+        console.error('Error in getProfile:', err);
+        next(err);
+    }
+};

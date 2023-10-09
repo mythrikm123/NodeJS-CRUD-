@@ -5,6 +5,7 @@ import User from '../src/models/users';
 import bcrypt from 'bcrypt';
 import { before, describe, it } from 'mocha';
 
+const SALT_ROUNDS = 10;
 type UserWithPassword = {
     id: string;
     username: string;
@@ -20,6 +21,7 @@ describe('User Service', () => {
     let sandbox: SinonSandbox;
     let createStub: SinonStub;
     let findOneByUsernameStub: SinonStub;
+    let getProfileStub: SinonStub;
 
     before(() => {
         sandbox = sinon.createSandbox();
@@ -29,6 +31,7 @@ describe('User Service', () => {
         sandbox.restore();
         createStub = sandbox.stub(User, 'create');
         findOneByUsernameStub = sandbox.stub(userService, 'findOneByUsername');
+        getProfileStub = sandbox.stub(userService, 'getProfile');
     });
 
     after(() => {
@@ -38,7 +41,7 @@ describe('User Service', () => {
     it('should create a new user with additional fields', async () => {
         findOneByUsernameStub.resolves(null);
 
-        const hashedPassword = await bcrypt.hash('Password123', 10);
+        const hashedPassword = await bcrypt.hash('Password123', SALT_ROUNDS);
         const newUser: UserWithPassword = {
             id: '12345',
             username: 'testuser',
@@ -72,19 +75,17 @@ describe('User Service', () => {
             pincode: '12345',
         });
 
+        // Omit password from the expected result for comparison
         const { password, ...expectedUser } = newUser;
         expect(result).to.deep.equal(expectedUser);
     });
-
-
-
 
     it('should successfully login a user', async () => {
         const user: UserWithPassword = {
             id: '12345',
             username: 'testuser',
             email: 'test@example.com',
-            password: await bcrypt.hash('Password123', 10),
+            password: await bcrypt.hash('Password123', SALT_ROUNDS),
             name: 'Test User',
             phoneNumber: '1234567890',
             city: 'Test City',
@@ -103,15 +104,10 @@ describe('User Service', () => {
 
         expect(result.status).to.equal(200);
         expect(result.message).to.equal('Login successful');
-        expect(result.user).to.deep.equal({
-            id: '12345',
-            username: 'testuser',
-            name: 'Test User',
-            email: 'test@example.com',
-            phoneNumber: '1234567890',
-            city: 'Test City',
-            pincode: '12345',
-        });
+        
+        // Omit password from the expected user in the result for comparison
+        const { password, ...expectedUser } = user;
+        expect(result.user).to.deep.equal(expectedUser);
         expect(result).to.have.property('token');
     });
 
@@ -120,7 +116,7 @@ describe('User Service', () => {
             id: '12345',
             username: 'testuser',
             email: 'test@example.com',
-            password: await bcrypt.hash('Password123', 10),
+            password: await bcrypt.hash('Password123', SALT_ROUNDS),
             name: 'Test User',
             phoneNumber: '1234567890',
             city: 'Test City',
@@ -155,4 +151,31 @@ describe('User Service', () => {
         expect(result.status).to.equal(404);
         expect(result.message).to.equal('User not found');
     });
+
+    it('should get the profile of a user', async () => {
+        const hashedPassword = await bcrypt.hash('Password123', SALT_ROUNDS);
+
+        const user: UserWithPassword = {
+            id: '12345',
+            username: 'testuser',
+            email: 'test@example.com',
+            password: hashedPassword,
+            name: 'Test User',
+            phoneNumber: '1234567890',
+            city: 'Test City',
+            pincode: '12345',
+        };
+
+        getProfileStub.resolves(user);
+
+        const result = await userService.getProfile('testuser');
+
+        sinon.assert.calledOnce(getProfileStub);
+        sinon.assert.calledWithExactly(getProfileStub, 'testuser');
+
+        // Omit password from the expected profile in the result for comparison
+        const { password, ...expectedProfile } = user;
+        expect(result).to.deep.equal(expectedProfile);
+    });
+
 });

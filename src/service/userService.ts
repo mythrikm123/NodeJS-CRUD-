@@ -2,9 +2,12 @@ import bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 import User from '../models/users';
 import jwt from 'jsonwebtoken';
+import { Sequelize } from 'sequelize';
 
 const SALT_ROUNDS = 10;
 const secretKey = process.env.JWT_SECRET || 'your_secret_key_here';
+
+export type UserWithPassword = User & { password: string };
 
 export const createUser = async (
     username: string,
@@ -96,6 +99,35 @@ export const loginUser = async (username: string, password: string) => {
             status: 500,
             message: 'Internal Server Error',
         };
+    }
+};
+
+export const getProfile = async (userId: string) => {
+    try {
+        const user = await findOneByUsername(userId);
+
+        if (user) {
+            console.log('Original user object:', user.toJSON());
+
+            // Use toJSON() to convert the Sequelize instance to a plain JavaScript object
+            const userJson = user.toJSON();
+
+            // Ensure that 'password' is present in the userJson
+            console.log('User JSON before removal:', userJson);
+
+            // Destructure the userJson to remove the 'password' field
+            const { password, ...userWithoutPassword } = userJson as UserWithPassword;
+
+            // Ensure that 'password' is removed in the final result
+            console.log('User without password:', userWithoutPassword);
+
+            return userWithoutPassword;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error in getProfile:', error);
+        return null;
     }
 };
 

@@ -1,8 +1,17 @@
+ // Import necessary modules
 import { expect } from 'chai';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import * as sinon from 'sinon';
 import * as userService from '../src/service/userService';
-import { createUser, loginUser } from '../src/controller/users';
+import { createUser, loginUser, getProfile } from '../src/controller/users';
+import { describe, it } from 'mocha';
+import { Sequelize, Model } from 'sequelize';
+import { NextFunction } from 'express';
+
+const sequelizeInstance = new Sequelize({
+    dialect: 'postgres', // Replace with your actual database dialect
+  });
+  const UserModel = {} as Model<any, any>;
 
 describe('UserController', () => {
     describe('createUser', () => {
@@ -28,7 +37,7 @@ describe('UserController', () => {
                 json: jsonStub,
             } as unknown) as Response;
 
-            const next: NextFunction = sinon.spy();
+            const next = sinon.spy() as NextFunction;
 
             sandbox.stub(userService, 'createUser').resolves({
                 id: 'someUserId',
@@ -57,7 +66,7 @@ describe('UserController', () => {
                 },
             })).to.be.true;
 
-            sandbox.restore();  
+            sandbox.restore();
         });
 
         it('should handle errors when user already exists', async () => {
@@ -82,7 +91,7 @@ describe('UserController', () => {
                 json: jsonStub,
             } as unknown) as Response;
 
-            const next: NextFunction = sinon.spy();
+            const next = sinon.spy() as NextFunction;
 
             sandbox.stub(userService, 'createUser').throws(new Error('Username or email already exists'));
 
@@ -91,7 +100,7 @@ describe('UserController', () => {
             expect(statusStub.calledWith(400)).to.be.true;
             expect(jsonStub.calledWithMatch({ error: 'Username or email already exists' })).to.be.true;
 
-            sandbox.restore();  
+            sandbox.restore();
         });
     });
 
@@ -113,7 +122,7 @@ describe('UserController', () => {
                 json: jsonStub,
             } as unknown) as Response;
 
-            const next: NextFunction = sinon.spy();
+            const next = sinon.spy() as NextFunction;
 
             sandbox.stub(userService, 'loginUser').resolves({
                 status: 200,
@@ -147,7 +156,7 @@ describe('UserController', () => {
                 },
             })).to.be.true;
 
-            sandbox.restore();  
+            sandbox.restore();
         });
 
         it('should handle errors for invalid username or password', async () => {
@@ -167,7 +176,7 @@ describe('UserController', () => {
                 json: jsonStub,
             } as unknown) as Response;
 
-            const next: NextFunction = sinon.spy();
+            const next = sinon.spy() as NextFunction;
 
             sandbox.stub(userService, 'loginUser').resolves({
                 status: 401,
@@ -180,7 +189,7 @@ describe('UserController', () => {
                 message: 'Invalid username or password',
             })).to.be.true;
 
-            sandbox.restore();  
+            sandbox.restore();
         });
 
         it('should handle errors for user not found', async () => {
@@ -200,7 +209,8 @@ describe('UserController', () => {
                 json: jsonStub,
             } as unknown) as Response;
 
-            const next: NextFunction = sinon.spy();
+            const next = sinon.spy() as NextFunction;
+
             sandbox.stub(userService, 'loginUser').resolves({
                 status: 404,
                 message: 'User not found',
@@ -213,8 +223,100 @@ describe('UserController', () => {
                 message: 'User not found',
             })).to.be.true;
 
-            sandbox.restore();  
+            sandbox.restore();
+        });
+    });
+
+    describe('getProfile', () => {
+        it('should get the profile of a user', async () => {
+            const req: Partial<Request> = {
+                params: {
+                    username: 'existinguser',
+                },
+            };
+        
+            const sandbox = sinon.createSandbox();
+            const statusStub = sandbox.stub().returnsThis();
+            const jsonStub = sandbox.stub();
+        
+            const res = ({
+                status: statusStub,
+                json: jsonStub,
+            } as unknown) as Response;
+        
+            const next = sinon.spy() as NextFunction;
+        
+            // Assuming you have the actual user ID for 'existinguser'
+            const expectedUserId = 'someUserId';
+        
+            // Mock Sequelize instance and a dummy model
+            const sequelizeInstance = new Sequelize();
+            const UserModel = {} as Model<any, any>;
+        
+            // Add expected properties for the profile
+            const expectedProfile = {
+                id: expectedUserId,
+                username: 'existinguser',
+                name: 'Existing User',
+                email: 'existing@example.com',
+                phoneNumber: '9876543210',
+                city: 'Existing City',
+                pincode: '54321',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                _attributes: {},
+                dataValues: {},
+                _creationAttributes: {},
+                isNewRecord: true,
+                sequelize: sequelizeInstance,
+                _model: UserModel,
+            };
+        
+            sandbox.stub(userService, 'getProfile').resolves(expectedProfile);
+        
+            await getProfile(req as Request, res, next);
+        
+            expect(statusStub.calledWith(200)).to.be.true;
+            expect(jsonStub.calledWithMatch({
+                status: 'ok',
+                message: 'User profile fetched successfully',
+                data: expectedProfile,
+            })).to.be.true;
+        
+            sandbox.restore();
+        });
+        
         });
 
+        it('should handle errors when user profile not found', async () => {
+            const req: Partial<Request> = {
+                params: {
+                    username: 'nonexistentuser',
+                },
+            };
+
+            const sandbox = sinon.createSandbox();
+            const statusStub = sandbox.stub().returnsThis();
+            const jsonStub = sandbox.stub();
+
+            const res = ({
+                status: statusStub,
+                json: jsonStub,
+            } as unknown) as Response;
+
+            const next = sinon.spy() as NextFunction;
+
+            sandbox.stub(userService, 'getProfile').resolves(null);
+
+            await getProfile(req as Request, res, next);
+
+            expect(statusStub.calledWith(404)).to.be.true;
+            expect(jsonStub.calledWithMatch({
+                status: 'nok',
+                message: 'User profile not found',
+            })).to.be.true;
+
+            sandbox.restore();
+        });
     });
-});
+
