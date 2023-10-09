@@ -66,6 +66,7 @@ Task.init(
         reporter: {
             type: DataTypes.UUID,
             allowNull: true,
+            defaultValue: null
         },
     },
     {

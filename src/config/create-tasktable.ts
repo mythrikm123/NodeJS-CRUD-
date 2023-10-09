@@ -55,6 +55,7 @@ const Task = sequelize.define(
     reporter: {
       type: DataTypes.UUID,  
       allowNull: true,
+      defaultValue: null,
     },
   },
   {

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
+import { handleValidationErrors } from './errorHandler';
 
 export const validateTask = [
   body('name')
@@ -26,15 +27,5 @@ export const validateTask = [
     .notEmpty()
     .withMessage('Assignee is required'),
 
-  (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        status: 'nok',
-        message: 'Validation errors',
-        errors: errors.array(),
-      });
-    }
-    next();
-  },
+    handleValidationErrors
 ];

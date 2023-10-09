@@ -1,4 +1,5 @@
 import Task from '../models/task';  
+import { v4 as uuid } from 'uuid';
 
 export const createTask = async (
   name: string,
@@ -7,7 +8,7 @@ export const createTask = async (
   priority: string,
   type: "bug" | "feature" | "improvement",  
   assignee: string,
-  reporter: string
+  loggedInUserId: string 
 ) => {
   try {
     const task = await Task.create({
@@ -17,23 +18,23 @@ export const createTask = async (
       priority,
       type,  
       assignee,
-      reporter,
+      reporter: uuid(), 
     });
 
     const createdTask = task.toJSON();
 
     return {
-        status: 201,  
-        message: 'Task created successfully',
-        data: createdTask,
-      };
-    } catch (error) {
-      console.error('Error creating task:', error);
-  
-      return {
-        status: 500,  
-        message: 'Failed to create task',
-        data: null,
-      };
-    }
-  };
+      status: 201,  
+      message: 'Task created successfully',
+      data: createdTask,
+    };
+  } catch (error) {
+    console.error('Error creating task:', error);
+
+    return {
+      status: 500,  
+      message: 'Failed to create task',
+      data: null,
+    };
+  }
+};
