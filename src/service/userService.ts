@@ -60,14 +60,12 @@ export const createUser = async (
 export const loginUser = async (username: string, password: string) => {
     try {
         const user = await findOneByUsername(username);
-
         if (!user) {
             return {
                 status: 404,
                 message: 'User not found',
             };
         }
-
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return {
@@ -108,19 +106,10 @@ export const getProfile = async (userId: string) => {
 
         if (user) {
             console.log('Original user object:', user.toJSON());
-
-            // Use toJSON() to convert the Sequelize instance to a plain JavaScript object
             const userJson = user.toJSON();
-
-            // Ensure that 'password' is present in the userJson
             console.log('User JSON before removal:', userJson);
-
-            // Destructure the userJson to remove the 'password' field
             const { password, ...userWithoutPassword } = userJson as UserWithPassword;
-
-            // Ensure that 'password' is removed in the final result
             console.log('User without password:', userWithoutPassword);
-
             return userWithoutPassword;
         } else {
             return null;

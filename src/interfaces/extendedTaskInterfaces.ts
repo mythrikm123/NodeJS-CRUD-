@@ -1,4 +1,3 @@
-// interfaces/extendedTaskInterfaces.ts
 import { Optional } from 'sequelize';
 import { TaskAttributes } from './taskInterfaces';
 

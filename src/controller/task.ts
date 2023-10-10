@@ -1,4 +1,3 @@
- // controllers/tasks.ts
 import { Request, Response, NextFunction } from 'express';
 import * as taskService from '../service/taskService';
 import { authenticateToken } from '../middlewares/authentication';
@@ -10,7 +9,6 @@ export const createTask = async (
   next: NextFunction
 ) => {
   try {
-    // Use authenticateToken as middleware
     authenticateToken(req, res, async () => {
       const {
         name,
@@ -20,19 +18,14 @@ export const createTask = async (
         type,
         assignee,
       } = req.body;
-
       const user = req.user;
-
       if (!user) {
         return res.status(401).json({
           status: 'nok',
           message: 'Unauthorized',
         });
       }
-
       const loggedInUserId = user.id;
-
-      // Await the asynchronous createTask function
       const responseData = await taskService.createTask({
         name,
         description,
@@ -40,7 +33,7 @@ export const createTask = async (
         priority,
         type,
         assignee,
-        reporter: '', 
+        reporter: '',
       }, loggedInUserId);
 
       res.status(201).json({
@@ -53,3 +46,27 @@ export const createTask = async (
     next(err);
   }
 };
+
+export const getTasks = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    authenticateToken(req, res, async () => {
+      const page: number = parseInt(req.query.page as string, 10) || 1;
+      const pageSize: number = parseInt(req.query.pageSize as string, 10) || 10;
+
+      const loggedInUserId = req.user?.id;
+      const tasks = await taskService.getPaginatedTasks(page, pageSize, loggedInUserId);
+      res.status(200).json({
+        status: 'ok',
+        message: 'Tasks retrieved successfully',
+        data: tasks,
+      });
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

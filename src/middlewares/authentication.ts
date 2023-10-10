@@ -1,4 +1,3 @@
- // middlewares/authentication.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -10,7 +9,7 @@ export const authenticateToken = (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
-    status: number = 401 // Default status code is 401
+    status: number = 401  
 ) => {
     try {
         const authHeader = req.headers['authorization'];

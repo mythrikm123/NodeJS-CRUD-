@@ -1,8 +1,7 @@
- // interfaces/taskInterfaces.ts
 import { Optional } from 'sequelize';
 
 interface TaskAttributes {
-    id: string; // Change the type to string for UUID
+    id: string;  
     name: string;
     description: string;
     status: 'open' | 'inProgress' | 'inReview' | 'resolved' | 'canceled';

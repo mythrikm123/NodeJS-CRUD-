@@ -11,14 +11,15 @@ class Task extends Model<TaskAttributes, TaskCreationAttributes> implements Task
     public priority!: string;
     public type!: 'bug' | 'feature' | 'improvement';
     public assignee!: string;
-    public reporter!: string | null; // Allow null for reporter
+    public reporter!: string | null;  
+  createdAt: any;
 }
 
 Task.init(
     {
         id: {
-            type: DataTypes.UUID, // Change the data type to UUID
-            defaultValue: uuidv4(), // Generate a UUID default value
+            type: DataTypes.UUID,  
+            defaultValue: uuidv4(), 
             primaryKey: true,
         },
         name: {
@@ -60,6 +61,9 @@ Task.init(
     {
         sequelize:sequelize(),
         tableName: 'tasks',
+        timestamps: true,
+        updatedAt: 'updatedAt',  
+        createdAt: 'createdAt',
     }
 );
 

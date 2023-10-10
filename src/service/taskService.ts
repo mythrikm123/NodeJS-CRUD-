@@ -39,3 +39,44 @@ export const createTask = async (
     };
   }
 };
+
+export const getPaginatedTasks = async (
+  page: number,
+  pageSize: number,
+  loggedInUserId: string | undefined
+) => {
+  try {
+    const offset = (page - 1) * pageSize;
+    const tasks = await Task.findAndCountAll({
+      where: {
+      },
+      limit: pageSize,
+      offset: offset,
+    });
+
+    const formattedTasks = tasks.rows.map((task) => ({
+      id: task.id,
+      name: task.name,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      type: task.type,
+      assignee: task.assignee,
+      reporter: task.reporter,
+      updatedAt: task.update,
+      createdAt: task.createdAt,
+    }));
+
+    return {
+      tasks: formattedTasks,
+      total: tasks.count,
+    };
+  } catch (error) {
+    console.error('Error retrieving paginated tasks:', error);
+    return {
+      status: 500,
+      message: 'Failed to retrieve tasks',
+      data: null,
+    };
+  }
+};
