@@ -1,38 +1,39 @@
-import Task from '../models/task';  
+import Task from '../models/task';
 import { v4 as uuid } from 'uuid';
+import { ExtendedTaskCreationAttributes } from '../interfaces/extendedTaskInterfaces';
 
 export const createTask = async (
-  name: string,
-  description: string,
-  status: "open" | "inProgress" | "inReview" | "resolved" | "canceled",
-  priority: string,
-  type: "bug" | "feature" | "improvement",  
-  assignee: string,
-  loggedInUserId: string 
+  taskInput: ExtendedTaskCreationAttributes,
+  loggedInUserId: string
 ) => {
   try {
+    const { loggedInUserId: omittedUserId, ...taskAttributes } = taskInput;
+
     const task = await Task.create({
-      name,
-      description,
-      status,
-      priority,
-      type,  
-      assignee,
-      reporter: uuid(), 
+      id: uuid(),
+      ...taskAttributes,
+      reporter: uuid(),
     });
 
     const createdTask = task.toJSON();
 
     return {
-      status: 201,  
-      message: 'Task created successfully',
-      data: createdTask,
+      id: createdTask.id,
+      name: createdTask.name,
+      description: createdTask.description,
+      status: createdTask.status,
+      priority: createdTask.priority,
+      type: createdTask.type,
+      assignee: createdTask.assignee,
+      reporter: createdTask.reporter,
+      updatedAt: createdTask.updatedAt,
+      createdAt: createdTask.createdAt,
     };
   } catch (error) {
     console.error('Error creating task:', error);
 
     return {
-      status: 500,  
+      status: 500,
       message: 'Failed to create task',
       data: null,
     };

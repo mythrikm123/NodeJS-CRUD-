@@ -1,22 +1,10 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
-
-interface TaskAttributes {
-    id: string; // Change the type to string for UUID
-    name: string;
-    description: string;
-    status: 'open' | 'inProgress' | 'inReview' | 'resolved' | 'canceled';
-    priority: string;
-    type: 'bug' | 'feature' | 'improvement';
-    assignee: string;
-    reporter: string | null; // Allow null for reporter
-}
-
-interface TaskCreationAttributes extends Optional<TaskAttributes, 'id'> {}
+import { TaskAttributes, TaskCreationAttributes } from '../interfaces/taskInterfaces';
 
 class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
-    public id!: string; // Change the type to string for UUID
+    public id!: string; 
     public name!: string;
     public description!: string;
     public status!: 'open' | 'inProgress' | 'inReview' | 'resolved' | 'canceled';
