@@ -10,7 +10,7 @@ export const createTask = async (
     const { loggedInUserId: omittedUserId, ...taskAttributes } = taskInput;
 
     const task = await Task.create({
-      id: uuid(),
+      id: loggedInUserId,
       ...taskAttributes,
       reporter: uuid(),
     });
@@ -76,6 +76,77 @@ export const getPaginatedTasks = async (
     return {
       status: 500,
       message: 'Failed to retrieve tasks',
+      data: null,
+    };
+  }
+};
+export const updateTask = async (taskId: string, taskInput: ExtendedTaskCreationAttributes) => {
+  try {
+    const existingTask = await Task.findByPk(taskId);
+
+    if (!existingTask) {
+      return {
+        status: 400,
+        message: 'Unable to update task: Task not found',
+        data: null,
+      };
+    }
+
+    existingTask.set(taskInput);
+    await existingTask.save();
+
+    const updatedTask = existingTask.toJSON();
+
+    return {
+      id: updatedTask.id,
+      name: updatedTask.name,
+      description: updatedTask.description,
+      status: updatedTask.status,
+      priority: updatedTask.priority,
+      type: updatedTask.type,
+      assignee: updatedTask.assignee,
+      reporter: updatedTask.reporter,
+      updatedAt: updatedTask.updatedAt,
+      createdAt: updatedTask.createdAt,
+    };
+  } catch (error) {
+    console.error('Failed to update task:', error);
+
+    return {
+      status: 500,
+      message: 'Failed to update task',
+      data: null,
+    };
+  }
+};
+
+export const deleteTask = async (taskId: string) => {
+  try {
+    const deletedTask = await Task.destroy({
+      where: {
+        id: taskId,
+      },
+    });
+
+    if (deletedTask === 0) {
+      return {
+        status: 404,
+        message: 'Task not found',
+        data: null,
+      };
+    }
+
+    return {
+      status: 200,
+      message: 'Task deleted successfully',
+      data: null,
+    };
+  } catch (error) {
+    console.error('Failed to delete task:', error);
+
+    return {
+      status: 500,
+      message: 'Failed to delete task',
       data: null,
     };
   }

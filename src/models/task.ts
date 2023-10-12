@@ -13,6 +13,7 @@ class Task extends Model<TaskAttributes, TaskCreationAttributes> implements Task
     public assignee!: string;
     public reporter!: string | null;  
   createdAt: any;
+  updatedAt: any;
 }
 
 Task.init(
